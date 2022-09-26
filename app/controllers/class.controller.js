@@ -9,20 +9,29 @@ exports.createClass = (req, res) => {
     } else if (!req.body.division) {
         res.status(400).send({ message: "Division can not be empty!" });
         return;
-    } 
+    }
 
     const _class = new Class({
         standard: req.body.standard,
         division: req.body.division
     });
 
-    _class.save(_class).then(data => {
-        res.send(data);
-    }).catch(err => {
-        res.status(500).send({
-            message: err.message || "Error occurred while creating Class data"
-        });
+    Class.find({ standard: _class.standard }).then(data => {
+        if (data.length > 0) {
+            res.status(400).send({ message: `Class already exists. Unable to Save Class Details`, data: data });
+            return;
+        } else {
+            _class.save(_class).then(data => {
+                res.send(data);
+            }).catch(err => {
+                res.status(500).send({
+                    message: err.message || "Error occurred while creating Class data"
+                });
+            });
+        }
     });
+
+
 };
 
 // Retrieve all Classs from the database.
